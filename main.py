@@ -1,13 +1,11 @@
-import neopixel
-import time
-import machine
+from rpmk.utils.led import Led
+from rpmk.utils.log import Logger
 
-p = machine.Pin(16, machine.Pin.OUT)
-n = neopixel.NeoPixel(p, 1)
+log = Logger(__name__)
+led = Led.get_instance()
+
 for i in range(0, 5):
-    n[0] = (0, 5, 0)
-    n.write()
+    led.on()
     time.sleep(0.1)
-    n[0] = (0, 0, 0)
-    n.write()
+    led.off()
     time.sleep(0.1)

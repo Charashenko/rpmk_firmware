@@ -55,9 +55,10 @@ def build(args):
         _arg_not_supplied("-s", args.command)
     print("Cleaning build directory")
     build_dir = args.build[:-1] if args.build[-1] == "/" else args.build
+    source_dir = args.source[:-1] if args.source[-1] == "/" else args.source
     os.system(f"rm -rf {build_dir}/*")
     print("Creating .mpy files")
-    os.system(f"python {args.mpy_cross_tool} -o {build_dir} {args.source}")
+    os.system(f"python {args.mpy_cross_tool} -o {build_dir}/{source_dir} {source_dir}")
 
 
 def clean(args):

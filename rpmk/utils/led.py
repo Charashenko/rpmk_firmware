@@ -1,4 +1,4 @@
-import board
+from machine import Pin
 import neopixel
 
 
@@ -12,12 +12,10 @@ class Led:
         return cls.instance
 
     def __init__(self):
-        self.pin = board.NEOPIXEL
+        self.pin = Pin(16, Pin.OUT)
         self.pixel = neopixel.NeoPixel(
             self.pin,
             1,
-            brightness=0.3,
-            auto_write=False,
         )
 
     def rgb(self, r: int = 0, g: int = 0, b: int = 0):
@@ -33,4 +31,4 @@ class Led:
         self.__write()
 
     def __write(self):
-        self.pixel.show()
+        self.pixel.write()

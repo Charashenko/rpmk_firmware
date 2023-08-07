@@ -1,7 +1,5 @@
 from ..utils.log import Logger
 from ..utils.led import Led
-from adafruit_hid.keyboard import Keyboard
-from digitalio import DigitalInOut, Direction, Pull
 import usb_hid
 from .scan_mode import *
 from .protocol import Protocol
@@ -42,7 +40,7 @@ class Core:
         rows, cols = self.init_pins()
         side_pin = self.init_side_pin()
         self.get_is_left_half(side_pin)
-        self.get_is_usb_conn()
+        # self.get_is_usb_conn()
         # self.init_comm_protocol(self.clock_pin, self.data_pin)
         self.init_scanner(rows, cols)
 
