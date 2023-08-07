@@ -1,0 +1,4 @@
+connect serial /dev/ttyACM0 115200
+mkdir /pyboard/lib/
+cp -r build/* /pyboard/lib/
+cp main.py /pyboard/

@@ -1,0 +1,3 @@
+ROW2COL = 0
+COL2ROW = 1
+DIRECT = 2
