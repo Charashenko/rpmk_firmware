@@ -1,4 +1,4 @@
-from adafruit_datetime import datetime
+import time
 from .logging_conf import *
 import os
 
@@ -28,10 +28,10 @@ class Logger:
 
         if level == "Debug" and debug:
             print(pretty)
-            self.__file_log(pretty)
+            # self.__file_log(pretty)
         else:
             print(pretty)
-            self.__file_log(pretty)
+            # self.__file_log(pretty)
 
     def __file_log(self, msg: str):
         date = self.__get_date()
@@ -47,17 +47,17 @@ class Logger:
             pass
 
     def __get_time(self) -> {"hour", "min", "sec"}:
-        unf_time = datetime.now()
+        unf_time = time.localtime()
         return {
-            "hour": f"0{unf_time.hour}" if (unf_time.hour < 10) else unf_time.hour,
-            "min": f"0{unf_time.minute}" if (unf_time.minute < 10) else unf_time.minute,
-            "sec": f"0{unf_time.second}" if (unf_time.second < 10) else unf_time.second,
+            "hour": f"0{unf_time[3]}" if (unf_time[3] < 10) else unf_time[3],
+            "min": f"0{unf_time[4]}" if (unf_time[4] < 10) else unf_time[4],
+            "sec": f"0{unf_time[5]}" if (unf_time[5] < 10) else unf_time[5],
         }
 
     def __get_date(self) -> {"year", "month", "day"}:
-        unf_time = datetime.now()
+        unf_date = time.localtime()
         return {
-            "year": f"0{unf_time.year}" if (unf_time.year < 10) else unf_time.year,
-            "month": f"0{unf_time.month}" if (unf_time.month < 10) else unf_time.month,
-            "day": f"0{unf_time.day}" if (unf_time.day < 10) else unf_time.day,
+            "year": f"0{unf_date[0]}" if (unf_date[0] < 10) else unf_date[0],
+            "month": f"0{unf_date[1]}" if (unf_date[1] < 10) else unf_date[1],
+            "day": f"0{unf_date[2]}" if (unf_date[2] < 10) else unf_date[2],
         }

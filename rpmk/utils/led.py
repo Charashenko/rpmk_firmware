@@ -23,7 +23,7 @@ class Led:
         self.__write()
 
     def on(self):
-        self.pixel[0] = (10, 10, 10)
+        self.pixel[0] = (5, 5, 5)
         self.__write()
 
     def off(self):

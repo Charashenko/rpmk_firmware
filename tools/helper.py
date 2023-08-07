@@ -118,6 +118,8 @@ def repl(args):
 def reset(args):
     nuke(args)
     setup(args)
+    print("Waiting for board")
+    time.sleep(5)
     build(args)
     install(args)
 

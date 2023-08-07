@@ -1,13 +1,13 @@
 from ..utils.log import Logger
 from ..utils.led import Led
-import usb_hid
 from .scan_mode import *
 from .protocol import Protocol
 from .scanner import Scanner
-from .event_handler import *
-from .event import Event
-from .executor import Executor
+from .engine import Engine
 import time
+
+from machine import Pin
+import asyncio
 
 log = Logger(__name__)
 led = Led.get_instance()
@@ -29,7 +29,6 @@ class Core:
         self.col_pins = col_pins
         self.row_pins = row_pins
         self.scan_mode = scan_mode
-        self.executor = Executor()
 
         self.init_session()
 
@@ -38,51 +37,40 @@ class Core:
         log.d("Running init")
 
         rows, cols = self.init_pins()
-        side_pin = self.init_side_pin()
-        self.get_is_left_half(side_pin)
-        # self.get_is_usb_conn()
-        # self.init_comm_protocol(self.clock_pin, self.data_pin)
-        self.init_scanner(rows, cols)
+        self.get_is_left_half()
+        self.get_is_usb_conn()
+        self.protocol = Protocol(self.clock_pin, self.data_pin, self.is_main)
+        self.engine = Engine(self.is_main, self.protocol)
+        self.scanner = Scanner(rows, cols, self.scan_mode, self.engine)
 
         log.d("Init done")
         led.off()
 
-    def init_pins(self) -> (list[DigitalInOut], list[DigitalInOut]):
+    def init_pins(self) -> (list[Pin], list[Pin]):
         rows = []
         cols = []
         for row_pin in self.row_pins:
-            pin = DigitalInOut(row_pin)
             if self.scan_mode is ROW2COL:
-                pin.direction = Direction.OUTPUT
+                pin = Pin(row_pin, Pin.OUT)
             elif self.scan_mode is COL2ROW:
-                pin.direction = Direction.INPUT
-                pin.pull = Pull.DOWN
+                pin = Pin(row_pin, Pin.IN, Pin.PULL_DOWN)
             rows.append(pin)
         for col_pin in self.col_pins:
-            pin = DigitalInOut(col_pin)
             if self.scan_mode is ROW2COL:
-                pin.direction = Direction.INPUT
-                pin.pull = Pull.DOWN
+                pin = Pin(col_pin, Pin.IN, Pin.PULL_DOWN)
             elif self.scan_mode is COL2ROW:
-                pin.direction = Direction.OUTPUT
+                pin = Pin(col_pin, Pin.OUT)
             cols.append(pin)
 
         return (rows, cols)
 
-    def init_side_pin(self) -> DigitalInOut:
-        side_pin = DigitalInOut(self.left_side_pin)
-        side_pin.direction = Direction.INPUT
-        side_pin.pull = Pull.DOWN
-        return side_pin
-
-    def get_is_left_half(self, pin: DigitalInOut):
-        self.is_left = pin.value
+    def get_is_left_half(self):
+        self.is_left = Pin(self.left_side_pin, Pin.IN, Pin.PULL_DOWN).value()
         log.d("Board is left") if self.is_left else log.d("Board is right")
 
     def get_is_usb_conn(self):
         try:
-            kb = Keyboard(usb_hid.devices)
-            self.is_main = True
+            self.is_main = self.is_left
             log.d("Board is main")
         except Exception as e:
             if str(e) == "USB busy":
@@ -91,17 +79,8 @@ class Core:
                 log.e(str(e))
                 raise RuntimeError(str(e))
 
-    def init_comm_protocol(self, clock_pin, data_pin):
-        self.protocol = Protocol(clock_pin, data_pin, self.is_main)
-        self.protocol.negotiate()
-
-    def init_scanner(
-        self,
-        rows: list[DigitalInOut],
-        cols: list[DigitalInOut],
-    ):
-        self.scanner = Scanner(rows, cols, self.scan_mode)
-
-    def start(self):
+    async def start(self):
         log.d("Starting")
-        self.scanner.start_scan()
+        scanner_task = asyncio.create_task(self.scanner.start_scan())
+        protocol_task = asyncio.create_task(self.protocol.recieve_data())
+        await asyncio.gather(scanner_task, protocol_task)
