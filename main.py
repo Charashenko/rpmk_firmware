@@ -2,22 +2,10 @@ from rpmk.utils.led import Led
 from rpmk.utils.log import Logger
 from rpmk.new_core.core import Core
 from rpmk.new_core.scan_mode import *
+import uasyncio
 
-from machine import Pin
-import asyncio
-import time
-
-log = Logger(__name__)
 led = Led.get_instance()
-
-
-def start():
-    for i in range(0, 3):
-        led.rgb(0, 5, 0)
-        time.sleep(0.05)
-        led.off()
-        time.sleep(0.05)
-
+led.indicate_start()
 
 c = Core(
     clock_pin=29,
@@ -38,4 +26,5 @@ c = Core(
     scan_mode=COL2ROW,
 )
 
-asyncio.run(c.start())
+
+uasyncio.run(c.start())

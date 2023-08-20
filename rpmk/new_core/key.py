@@ -2,6 +2,7 @@ from .keycodes import *
 from .event import Event
 from .event_handler import *
 
+
 class Key:
     def __init__(self, value: int = KC_NO, chained_key: object = None):
         self.value = value
@@ -10,11 +11,7 @@ class Key:
             raise RuntimeWarning("Reached maximum of chained keys")
 
     def __str__(self):
-        return (
-            str(self.value) + (f" {self.chained_key}")
-            if self.chained_key is not None
-            else ""
-        )
+        return str(self.value)
 
     def __eq__(self, o):
         if isinstance(o, Key):

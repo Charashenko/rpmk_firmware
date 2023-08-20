@@ -1,11 +1,12 @@
 import time
-from .logging_conf import *
 import os
+
+DEBUG = True
 
 
 class Logger:
-    def __init__(self, subtag):
-        self.__subtag = subtag
+    def __init__(self, tag):
+        self.__tag = tag
 
     def d(self, msg: str = ""):
         self.__log("Debug", msg)
@@ -24,9 +25,9 @@ class Logger:
         date = self.__get_date()
         pretty = f"{date['year']}-{date['month']}-{date['day']} "
         pretty += f"{time['hour']}:{time['min']}:{time['sec']} "
-        pretty += f"{tag}:{self.__subtag} [{level}] {msg}"
+        pretty += f"{self.__tag} [{level}] {msg}"
 
-        if level == "Debug" and debug:
+        if level == "Debug" and DEBUG:
             print(pretty)
             # self.__file_log(pretty)
         else:

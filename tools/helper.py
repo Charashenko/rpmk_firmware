@@ -5,6 +5,7 @@ DISK_LABEL = "RPI-RP2"
 COMMANDS = [
     "build",
     "clean",
+    "export",
     "install",
     "nuke",
     "repl",
@@ -17,7 +18,9 @@ COMMANDS = [
 
 def _get_dev():
     cmd = f"lsblk -fs | grep '{DISK_LABEL}' | awk " + "'{ print $1 }'"
-    ps = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    ps = subprocess.Popen(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
     output = ps.communicate()[0]
     return output.decode().strip()
 
@@ -71,6 +74,10 @@ def clean(args):
         else args.rshell_commands_dir
     )
     os.system(f"rshell -f {rshell_dir}/clean.rshell")
+
+
+def export(args):
+    print('export PATH=$PATH:"/home/charashenko/downloads/micropython/mpy-cross/build"')
 
 
 def install(args):
@@ -165,6 +172,7 @@ def main():
 Action to execute, can be:
 - build = Builds .mpy files from the source folder
 - clean = Cleans the device's file system (without nuking)
+- export = Print export command
 - install = Installs built .mpy files and main.py to the device
 - nuke = Nukes the devices with specified firmware
 - repl = Open REPL on the device
@@ -220,12 +228,18 @@ Run this script in the root directory of the project
         help="Path to the directory containing rshell instruction files",
     )
 
+    os.system(
+        'export PATH=$PATH:"/home/charashenko/downloads/micropython/mpy-cross/build"'
+    )
+
     args = parser.parse_args(sys.argv[1:])
 
     if args.command == "build":
         build(args)
     elif args.command == "clean":
         clean(args)
+    elif args.command == "export":
+        export(args)
     elif args.command == "install":
         install(args)
     elif args.command == "nuke":

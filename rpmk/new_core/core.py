@@ -1,13 +1,13 @@
 from ..utils.log import Logger
 from ..utils.led import Led
 from .scan_mode import *
-from .protocol import Protocol
+from .protocol.protocol import Protocol
 from .scanner import Scanner
 from .engine import Engine
 import time
 
 from machine import Pin
-import asyncio
+import uasyncio
 
 log = Logger(__name__)
 led = Led.get_instance()
@@ -33,28 +33,35 @@ class Core:
         self.init_session()
 
     def init_session(self):
-        led.on()
         log.d("Running init")
 
         rows, cols = self.init_pins()
         self.get_is_left_half()
         self.get_is_usb_conn()
-        self.protocol = Protocol(self.clock_pin, self.data_pin, self.is_main)
+        self.protocol = Protocol(
+            self.clock_pin,
+            self.data_pin,
+            self.is_main,
+            len(rows),
+            len(cols),
+        )
         self.engine = Engine(self.is_main, self.protocol)
         self.scanner = Scanner(rows, cols, self.scan_mode, self.engine)
 
         log.d("Init done")
-        led.off()
+        led.blink(1)
 
     def init_pins(self) -> (list[Pin], list[Pin]):
         rows = []
         cols = []
+
         for row_pin in self.row_pins:
             if self.scan_mode is ROW2COL:
                 pin = Pin(row_pin, Pin.OUT)
             elif self.scan_mode is COL2ROW:
                 pin = Pin(row_pin, Pin.IN, Pin.PULL_DOWN)
             rows.append(pin)
+
         for col_pin in self.col_pins:
             if self.scan_mode is ROW2COL:
                 pin = Pin(col_pin, Pin.IN, Pin.PULL_DOWN)
@@ -69,8 +76,8 @@ class Core:
         log.d("Board is left") if self.is_left else log.d("Board is right")
 
     def get_is_usb_conn(self):
+        self.is_main = self.is_left
         try:
-            self.is_main = self.is_left
             log.d("Board is main")
         except Exception as e:
             if str(e) == "USB busy":
@@ -81,6 +88,10 @@ class Core:
 
     async def start(self):
         log.d("Starting")
-        scanner_task = asyncio.create_task(self.scanner.start_scan())
-        protocol_task = asyncio.create_task(self.protocol.recieve_data())
-        await asyncio.gather(scanner_task, protocol_task)
+
+        if self.is_main:
+            await uasyncio.gather(
+                self.scanner.start_scan(), self.protocol.recieve_data()
+            )
+        else:
+            await uasyncio.gather(self.scanner.start_scan())

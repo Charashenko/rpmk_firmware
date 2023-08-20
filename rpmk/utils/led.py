@@ -1,5 +1,6 @@
 from machine import Pin
 import neopixel
+import time
 
 
 class Led:
@@ -29,6 +30,18 @@ class Led:
     def off(self):
         self.pixel[0] = (0, 0, 0)
         self.__write()
+
+    def indicate_start(self):
+        count = 3
+        self.blink(count, color=(0, 0, 5))
+
+    def blink(self, count, color=(0, 5, 0), delay=0.05):
+        for i in range(count):
+            self.pixel[0] = color
+            self.__write()
+            time.sleep(delay)
+            self.off()
+            time.sleep(delay)
 
     def __write(self):
         self.pixel.write()

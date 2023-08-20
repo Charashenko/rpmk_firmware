@@ -1,10 +1,8 @@
 import time
 from .scan_mode import *
 from ..utils.log import Logger
-from ..utils.led import Led
 
 log = Logger(__name__)
-led = Led.get_instance()
 
 
 class Scanner:
@@ -26,22 +24,22 @@ class Scanner:
             r = 0
             if self.scan_mode is ROW2COL:
                 for row in self.rows:
-                    row.value(1)
+                    row.on()
                     for col in self.cols:
                         if col.value():
                             self.engine.on_detect(r, c)
                         c = c + 1
-                    row.value(0)
+                    row.off()
                     r = r + 1
                     c = 0
             elif self.scan_mode is COL2ROW:
                 for col in self.cols:
-                    col.value(1)
+                    col.on()
                     for row in self.rows:
                         if row.value():
                             self.engine.on_detect(r, c)
                         r = r + 1
-                    col.value(0)
+                    col.off()
                     c = c + 1
                     r = 0
             await self.engine.on_scan_round_end()
