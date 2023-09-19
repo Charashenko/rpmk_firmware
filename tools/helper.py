@@ -31,6 +31,8 @@ def _mnt(directory):
         print("Device not found")
         sys.exit(1)
     print(f"Mounting device '/dev/{device}' to '{directory}'")
+    if not os.path.exists(directory):
+        os.mkdir("output")
     if os.system(f"mount /dev/{device} {directory}"):
         print("Mounting failed")
         sys.exit(1)
@@ -77,7 +79,7 @@ def clean(args):
 
 
 def export(args):
-    print('export PATH=$PATH:"/home/charashenko/downloads/micropython/mpy-cross/build"')
+    print('export PATH=$PATH:"/home/charashenko/Downloads/micropython/mpy-cross/build"')
 
 
 def install(args):
